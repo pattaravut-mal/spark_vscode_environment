@@ -6,9 +6,6 @@ This project demonstrates how to set up and run Jupyter Notebooks locally using 
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
-- [Usage](#usage)
-- [Cleaning Up](#cleaning-up)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Introduction
