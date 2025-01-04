@@ -1,0 +1,54 @@
+ARG SERVICE_ACCOUNT_JSONFILE = "pattarav-xxx.json"
+ARG GCP_PROJECT_ID = "pattarav-xxx"
+ARG GCP_REGION = "asia-southeast1"
+
+FROM jupyter/pyspark-notebook as base
+
+# Install the Google Cloud BigQuery client library and the BigQuery Jupyter plugin
+RUN pip3 install    dataproc-jupyter-plugin \
+                    google-cloud-bigquery \
+                    bigframes \
+                    bigquery-jupyter-plugin
+
+# Enable the BigQuery Jupyter plugin just in case it is not enabled
+RUN jupyter server extension enable dataproc_jupyter_plugin
+
+# Switch back to root to install the Google Cloud CLI
+USER root
+
+# Set environment variables to suppress prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    apt-transport-https \
+    ca-certificates \
+    --no-install-recommends
+
+USER root
+
+# Add the Google Cloud SDK distribution URI as a package source
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+
+# Update and install the Google Cloud CLI
+RUN apt-get update && apt-get install -y google-cloud-cli
+
+# Use the NB_UID argument
+USER ${NB_UID}
+
+# Copy the service account JSON file to the container
+COPY ${SERVICE_ACCOUNT_JSONFILE} /etc/gcloud/service-account.json
+ENV  GOOGLE_APPLICATION_CREDENTIALS "/etc/gcloud/service-account.json"
+
+# Activate the service account
+RUN  gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
+
+# Set the project ID and region
+RUN gcloud config set project ${GCP_PROJECT_ID} \
+    && gcloud config set compute/region ${GCP_REGION}
+
+# Restart the Jupyter server
+FROM base as final

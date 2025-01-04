@@ -1,0 +1,20 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  # jupyter_lab:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.Jupyter
+  #   ports:
+  #     - 8888:8888
+  #   volumes:
+  #     - .:/home/arm/work
+  #   depends_on:
+  #     - devcontainer
+  #   environment:
+  #     JUPYTER_ENABLE_LAB: "yes"
+  #     JUPYTER_TOKEN: "mytoken"
+  #     JUPYTER_NOTEBOOK_ARGS: "--ip=0.0.0.0 --no-browser --allow-root"
